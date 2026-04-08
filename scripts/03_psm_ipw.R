@@ -13,12 +13,12 @@ df <- readRDS(here("data", "processed", "criteo_sampled_500k.rds"))
 confounder_formula <- as.formula(paste("treatment ~", paste(paste0("f", 0:11), collapse = " + ")))
 
 # Propensity Score Matching (PSM)
-set.seed(42)
-match_obj <- matchit(confounder_formula, data = df, method = "nearest", distance = "glm", ratio = 1)
+set.seed(2168)
+match_obj <- matchit(confounder_formula, data = df, method = "nearest", distance = "glm", ratio = 1, caliper = 0.2)
 matched_data <- match.data(match_obj)
 
 # Fit PSM Model
-psm_fit <- lm(visit ~ treatment, data = matched_data, weights = weights)
+psm_fit <- lm(visit ~ treatment, data = matched_data, weights = matched_data$weights)
 psm_att <- coef(psm_fit)["treatment1"]
 
 # Save Love Plot
@@ -30,13 +30,13 @@ dev.off()
 # Inverse Probability Weighting (IPW)
 ps_model <- glm(confounder_formula, data = df, family = binomial(link = "logit"))
 df$ps <- predict(ps_model, type = "response")
-
+df <- df %>% filter(ps > 0.01 & ps < 0.99)
 # Calculate ATT Weights
 df$att_weights <- ifelse(df$treatment == 1, 1, df$ps / (1 - df$ps))
 
 # Fit IPW Model using Survey package
 design_ipw <- svydesign(ids = ~1, weights = ~att_weights, data = df)
-ipw_fit <- svyglm(visit ~ treatment, design = design_ipw, family = gaussian())
+ipw_fit <- svyglm(visit ~ treatment, design = design_ipw)
 ipw_att <- coef(ipw_fit)["treatment1"]
 
 # Save weights back to processed data for Clustering
