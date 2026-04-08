@@ -11,7 +11,7 @@ here::i_am("scripts/01_data_prep.R")
 data <- read.csv(here("data", "raw", "criteo_uplift-v2_1.csv"))
 
 # Sample Data for Computation Speed
-set.seed(42)
+set.seed(2168)
 df <- data[sample(nrow(data), 500000), ]
 
 # Format Variables

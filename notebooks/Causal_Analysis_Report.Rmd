@@ -64,8 +64,8 @@ cluster_results %>%
     ATT_Estimate = scales::percent(ATT_Estimate, accuracy = 0.01),
     CI = paste0("[", round(CI_Lower, 4), ", ", round(CI_Upper, 4), "]")
   ) %>%
-  select(Cluster, N_Users, Percent_Users, ATT_Estimate, CI) %>%
-  kable(col.names = c("Cluster", "User Count", "% of Total Audience", "Causal Lift (CATT)", "95% Confidence Interval"),
+  dplyr::select(Cluster, N_Users, Percent_Users, ATT_Estimate, CI) %>%
+  kable(col.names = c("Cluster", "User Count", "% of Population Sample", "Causal Lift (CATT)", "95% Confidence Interval"),
         caption = "Causal Advertising Lift by User Segment") %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = F) %>%
   row_spec(which.max(cluster_results$ATT_Estimate), bold = T, color = "white", background = "#2c3e50")
